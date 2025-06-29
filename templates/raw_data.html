@@ -1,0 +1,40 @@
+{% extends "base.html" %} {% block title %}{{ title }}{% endblock %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Raw Performance Data</h2>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-success" onclick="downloadJson()">📥 Download JSON</button>
+    <button class="btn btn-outline-info" onclick="copyToClipboard()">📋 Copy</button>
+    <a href="/reports/{{ report_id }}" class="btn btn-outline-primary">Back to Report</a>
+  </div>
+</div>
+
+<!-- Raw Data Display -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Performance Test Data (JSON)</h5>
+  </div>
+  <div class="card-body">
+    <pre id="jsonData" class="bg-light p-3 rounded" style="max-height: 600px; overflow-y: auto">{{ raw_data }}</pre>
+  </div>
+</div>
+
+<script>
+  function downloadJson() {
+    const data = document.getElementById("jsonData").textContent;
+    const dataBlob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "performance-data-{{ report_id }}.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function copyToClipboard() {
+    const jsonData = document.getElementById("jsonData").textContent;
+    navigator.clipboard.writeText(jsonData).then(function () {
+      alert("Data copied to clipboard!");
+    });
+  }
+</script>
+{% endblock %}

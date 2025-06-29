@@ -1,0 +1,368 @@
+{
+  "root_group": {
+    "checks": [
+      {
+        "id": "55074b82e96c5f225eab4db4f8cb7b23",
+        "passes": 91,
+        "fails": 30,
+        "name": "get users status is 200",
+        "path": "::get users status is 200"
+      },
+      {
+        "name": "get users response time OK",
+        "path": "::get users response time OK",
+        "id": "5b91a5c2ff28d002d82d5b7d1c380e2e",
+        "passes": 22,
+        "fails": 99
+      },
+      {
+        "path": "::create user status is 200 or 201",
+        "id": "f41356305c6bf854b2a3f99bffbb28b9",
+        "passes": 0,
+        "fails": 15,
+        "name": "create user status is 200 or 201"
+      },
+      {
+        "name": "create user response time OK",
+        "path": "::create user response time OK",
+        "id": "c16f6a5fb419ecb22102a25bf4c78a94",
+        "passes": 11,
+        "fails": 4
+      },
+      {
+        "name": "health check status is 200",
+        "path": "::health check status is 200",
+        "id": "d89ad1db9736d06506c2c682124fe48f",
+        "passes": 87,
+        "fails": 22
+      },
+      {
+        "path": "::health check response time OK",
+        "id": "03c721fd0cde06a9442c22a3be0d264f",
+        "passes": 14,
+        "fails": 95,
+        "name": "health check response time OK"
+      },
+      {
+        "name": "health check body contains Hello",
+        "path": "::health check body contains Hello",
+        "id": "7f4efdf4c31e530d48964cf320385cf6",
+        "passes": 87,
+        "fails": 22
+      },
+      {
+        "name": "channel publish response time OK",
+        "path": "::channel publish response time OK",
+        "id": "970d41c95372dec33cd14104761c1915",
+        "passes": 9,
+        "fails": 103
+      },
+      {
+        "passes": 82,
+        "fails": 30,
+        "name": "channel publish status check",
+        "path": "::channel publish status check",
+        "id": "6aa315f081a47734dc4abafe85d1a339"
+      },
+      {
+        "name": "mqtt publish status is 200",
+        "path": "::mqtt publish status is 200",
+        "id": "a688c755bfa5d8fed11413b039b379d5",
+        "passes": 0,
+        "fails": 116
+      },
+      {
+        "name": "mqtt publish response time OK",
+        "path": "::mqtt publish response time OK",
+        "id": "5882207fce45144cfbe4a8cd42c17606",
+        "passes": 7,
+        "fails": 109
+      }
+    ],
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": []
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdOutTTY": true,
+    "isStdErrTTY": true,
+    "testRunDurationMs": 60752.506
+  },
+  "metrics": {
+    "failed_requests": {
+      "contains": "default",
+      "values": {
+        "rate": 7.423562083183861,
+        "count": 451
+      },
+      "type": "counter"
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 100,
+        "min": 100,
+        "max": 100
+      }
+    },
+    "endpoint_hits": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 473,
+        "rate": 7.785687062851366
+      },
+      "thresholds": {
+        "count>200": {
+          "ok": true
+        }
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 474,
+        "rate": 7.8021472891998895
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 213,
+        "fails": 261,
+        "rate": 0.44936708860759494
+      },
+      "thresholds": {
+        "rate<0.05": {
+          "ok": false
+        }
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 5553.715,
+        "max": 20449.837,
+        "p(90)": 17495.3588,
+        "p(95)": 19008.744099999993,
+        "avg": 6778.417398734173
+      },
+      "thresholds": {
+        "p(95)<500": {
+          "ok": false
+        },
+        "p(99)<1000": {
+          "ok": false
+        }
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(90)": 12544.731,
+        "p(95)": 14320.962,
+        "avg": 6066.519720306514,
+        "min": 0.991,
+        "med": 5572.893,
+        "max": 16550.201
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 6504.839225738395,
+        "min": 0,
+        "med": 4934.428,
+        "max": 20449.775,
+        "p(90)": 17495.286500000002,
+        "p(95)": 19008.684349999996
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.5159008438818564,
+        "min": 0,
+        "med": 0.32,
+        "max": 13.915,
+        "p(90)": 0.7587000000000002,
+        "p(95)": 1.498099999999999
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 0.217,
+        "max": 1.841,
+        "p(90)": 0.3484,
+        "p(95)": 0.43319999999999975,
+        "avg": 0.17656540084388184
+      }
+    },
+    "successful_requests": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 22,
+        "rate": 0.3621249796675054
+      },
+      "thresholds": {
+        "count>100": {
+          "ok": false
+        }
+      }
+    },
+    "errors": {
+      "thresholds": {
+        "rate<0.05": {
+          "ok": false
+        }
+      },
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 451,
+        "fails": 0,
+        "rate": 1
+      }
+    },
+    "endpoint_response_time": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "avg": 6795.549682875264,
+        "min": 0,
+        "med": 5558,
+        "max": 20455,
+        "p(90)": 17512.8,
+        "p(95)": 19021.599999999995
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0,
+        "min": 0,
+        "med": 0
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 13,
+        "min": 4,
+        "max": 100
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0.0615,
+        "max": 10676.977,
+        "p(90)": 0.36850000000000016,
+        "p(95)": 1268.551149999996,
+        "avg": 273.4309324894515,
+        "min": 0
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.14724050632911392,
+        "min": 0,
+        "med": 0.0695,
+        "max": 4.592,
+        "p(90)": 0.298,
+        "p(95)": 0.46294999999999925
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 458,
+        "rate": 7.538783667623522
+      }
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.3886255924170616,
+        "passes": 410,
+        "fails": 645
+      }
+    },
+    "iteration_duration": {
+      "values": {
+        "p(95)": 20394.41721425,
+        "avg": 8520.333955631006,
+        "min": 506.409625,
+        "med": 7262.9883335,
+        "max": 22829.620583,
+        "p(90)": 19419.8650545
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 35608,
+        "rate": 586.1157398182061
+      }
+    },
+    "data_sent": {
+      "values": {
+        "count": 67193,
+        "rate": 1106.0119890363042
+      },
+      "type": "counter",
+      "contains": "data"
+    }
+  },
+  "setup_data": {
+    "endpoints": [
+      "GET /",
+      "GET /user/users",
+      "POST /user/users",
+      "GET /user/users/:id",
+      "POST /mqtt/pub",
+      "GET /mqtt/consume",
+      "POST /channel/pub"
+    ],
+    "serverReady": true,
+    "testStartTime": 1751208202839
+  }
+}

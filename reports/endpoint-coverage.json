@@ -1,0 +1,64 @@
+{
+  "testInfo": {
+    "timestamp": "2025-06-29T14-44-23-593Z",
+    "duration": 0,
+    "iterations": 0,
+    "vus": 0
+  },
+  "endpointCoverage": {
+    "GET /": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "GET /user/users": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "POST /user/users": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "GET /user/users/:id": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "POST /mqtt/pub": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "GET /mqtt/consume": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "POST /channel/pub": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    }
+  },
+  "summary": {
+    "totalEndpoints": 7,
+    "testedEndpoints": 0,
+    "coveragePercentage": "0.00"
+  }
+}

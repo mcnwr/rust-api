@@ -1,0 +1,49 @@
+{
+  "metrics": {
+    "http_reqs": {
+      "count": 1247,
+      "rate": 41.56666666666667
+    },
+    "http_req_duration": {
+      "avg": 45.2,
+      "max": 287.5,
+      "med": 38.1,
+      "min": 12.4,
+      "p(90)": 89.7,
+      "p(95)": 120.3,
+      "p(99)": 180.9
+    },
+    "http_req_failed": {
+      "rate": 0.013,
+      "passes": 1231,
+      "fails": 16
+    },
+    "iterations": {
+      "count": 150,
+      "rate": 5.0
+    },
+    "vus": {
+      "value": 10,
+      "max": 10
+    },
+    "vus_max": {
+      "value": 10,
+      "max": 10
+    }
+  },
+  "rootGroup": {
+    "name": "K6 Performance Test",
+    "checks": [
+      {
+        "name": "status is 200",
+        "passes": 1231,
+        "fails": 16
+      }
+    ]
+  },
+  "state": {
+    "isStdErr": false,
+    "isStdOut": false,
+    "testRunDurationMs": 30500
+  }
+}

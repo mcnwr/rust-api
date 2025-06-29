@@ -1,0 +1,112 @@
+{% extends "base.html" %} {% block title %}{{ title }}{% endblock %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Endpoint Coverage Analysis</h2>
+  <div class="d-flex gap-2">
+    <a href="/reports/{{ report_id }}" class="btn btn-outline-primary">Back to Report</a>
+    <a href="/reports" class="btn btn-outline-secondary">All Reports</a>
+  </div>
+</div>
+
+<!-- Coverage Overview -->
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Coverage Summary</h5>
+        <div class="row text-center">
+          <div class="col-md-4">
+            <h3 class="text-primary">{{ coverage.summary.total_endpoints }}</h3>
+            <p class="text-muted">Total Endpoints</p>
+          </div>
+          <div class="col-md-4">
+            <h3 class="text-success">{{ coverage.summary.tested_endpoints }}</h3>
+            <p class="text-muted">Tested Endpoints</p>
+          </div>
+          <div class="col-md-4">
+            <h3 class="text-info">{{ coverage.summary.coverage_percentage }}</h3>
+            <p class="text-muted">Coverage</p>
+          </div>
+        </div>
+        <!-- Coverage Progress Bar -->
+        <div class="progress mt-3">
+          <div class="progress-bar bg-success" role="progressbar" style="width: 75%">
+            {{ coverage.summary.coverage_percentage }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Test Information</h5>
+        <p>
+          <strong>Duration:</strong>
+          {{ coverage.test_info.duration }}s
+        </p>
+        <p>
+          <strong>Iterations:</strong>
+          {{ coverage.test_info.iterations }}
+        </p>
+        <p>
+          <strong>VUs:</strong>
+          {{ coverage.test_info.vus }}
+        </p>
+        <p>
+          <strong>Timestamp:</strong>
+          {{ coverage.test_info.timestamp }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint Details -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">Endpoint Performance Details</h5>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Hits</th>
+            <th>Success Rate</th>
+            <th>Avg Response Time</th>
+            <th>Errors</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for (endpoint, stats) in coverage.endpoint_coverage %}
+          <tr>
+            <td><code class="text-primary">{{ endpoint }}</code></td>
+            <td><span class="badge bg-secondary">{{ stats.hits }}</span></td>
+            <td>
+              <span class="badge bg-success">{{ stats.success_rate }}</span>
+            </td>
+            <td><span class="badge bg-info">{{ stats.avg_response_time }}</span></td>
+            <td>
+              {% if stats.errors > 0 %}
+              <span class="badge bg-danger">{{ stats.errors }}</span>
+              {% else %}
+              <span class="text-muted">0</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if stats.tested %}
+              <span class="text-success">✅ Tested</span>
+              {% else %}
+              <span class="text-danger">❌ Not Tested</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

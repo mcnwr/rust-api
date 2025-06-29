@@ -1,0 +1,71 @@
+{
+  "testInfo": {
+    "timestamp": "2025-06-29T15:54:00Z",
+    "duration": 30.5,
+    "iterations": 150,
+    "vus": 10
+  },
+  "endpointCoverage": {
+    "/health": {
+      "hits": 150,
+      "successRate": "100%",
+      "avgResponseTime": "12ms",
+      "errors": 0,
+      "tested": true
+    },
+    "/users": {
+      "hits": 245,
+      "successRate": "98.8%",
+      "avgResponseTime": "45ms",
+      "errors": 3,
+      "tested": true
+    },
+    "/users/{id}": {
+      "hits": 180,
+      "successRate": "97.2%",
+      "avgResponseTime": "38ms",
+      "errors": 5,
+      "tested": true
+    },
+    "/channels": {
+      "hits": 198,
+      "successRate": "99.5%",
+      "avgResponseTime": "52ms",
+      "errors": 1,
+      "tested": true
+    },
+    "/channels/{id}": {
+      "hits": 156,
+      "successRate": "96.8%",
+      "avgResponseTime": "67ms",
+      "errors": 5,
+      "tested": true
+    },
+    "/channels/{id}/messages": {
+      "hits": 167,
+      "successRate": "98.2%",
+      "avgResponseTime": "89ms",
+      "errors": 3,
+      "tested": true
+    },
+    "/mqtt/publish": {
+      "hits": 89,
+      "successRate": "94.4%",
+      "avgResponseTime": "125ms",
+      "errors": 5,
+      "tested": true
+    },
+    "/mqtt/status": {
+      "hits": 0,
+      "successRate": "0%",
+      "avgResponseTime": "0ms",
+      "errors": 0,
+      "tested": false
+    }
+  },
+  "summary": {
+    "totalEndpoints": 8,
+    "testedEndpoints": 7,
+    "coveragePercentage": "87.5%"
+  }
+}
