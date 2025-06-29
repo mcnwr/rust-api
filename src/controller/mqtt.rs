@@ -13,7 +13,11 @@ use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 use tokio::time::timeout;
 
-const RABBITMQ_ADDRS: &str = "amqp://guest:guest@127.0.0.1:5672";
+fn get_rabbitmq_url() -> String {
+    std::env::var("RABBITMQ_URL")
+        .unwrap_or_else(|_| "amqp://guest:guest@127.0.0.1:5672".to_string())
+}
+
 const QUEUE_NAME: &str = "test";
 const PRODUCER_COUNT: u32 = 10;
 const ITERATION_PER_PRODUCER: u32 = 100000;
@@ -44,7 +48,8 @@ impl Default for ProducerConfig {
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 async fn create_connection() -> Result<Connection> {
-    Connection::connect(RABBITMQ_ADDRS, ConnectionProperties::default())
+    let rabbitmq_url = get_rabbitmq_url();
+    Connection::connect(&rabbitmq_url, ConnectionProperties::default())
         .await
         .map_err(|e| format!("Failed to connect to RabbitMQ: {}", e).into())
 }
