@@ -1,0 +1,73 @@
+{
+  "testInfo": {
+    "timestamp": "2025-06-30T10-39-00-387Z",
+    "duration": 0,
+    "iterations": 0,
+    "vus": 0
+  },
+  "endpointCoverage": {
+    "GET /health": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "GET /users": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "POST /users": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "GET /users/:id": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "POST /mqtt/publish": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "GET /mqtt/status": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "GET /channels": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    },
+    "POST /channels": {
+      "hits": 0,
+      "successRate": "0",
+      "avgResponseTime": "0",
+      "errors": 0,
+      "tested": false
+    }
+  },
+  "summary": {
+    "totalEndpoints": 8,
+    "testedEndpoints": 0,
+    "coveragePercentage": "0.00",
+    "testDate": "2025-06-30T10:39:00.388Z",
+    "testDuration": "0.00s"
+  }
+}

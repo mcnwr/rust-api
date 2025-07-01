@@ -2,7 +2,6 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-
 use futures_lite::StreamExt;
 use lapin::{
     options::{BasicAckOptions, BasicConsumeOptions, BasicPublishOptions, QueueDeclareOptions},
@@ -12,10 +11,17 @@ use lapin::{
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 use tokio::time::timeout;
+use uuid::Uuid;
 
 fn get_rabbitmq_url() -> String {
     std::env::var("RABBITMQ_URL")
         .unwrap_or_else(|_| "amqp://guest:guest@127.0.0.1:5672".to_string())
+}
+
+#[derive(Serialize)]
+struct PayloadMessage {
+    id: String,
+    message: String,
 }
 
 const QUEUE_NAME: &str = "test";
@@ -79,7 +85,7 @@ async fn publish_message(channel: &Channel, task: &Task) -> Result<()> {
     let payload_bytes =
         serde_json::to_vec(task).map_err(|e| format!("Failed to serialize task payload: {}", e))?;
 
-    channel
+    let publish_result = channel
         .basic_publish(
             "",
             QUEUE_NAME,
@@ -87,10 +93,22 @@ async fn publish_message(channel: &Channel, task: &Task) -> Result<()> {
             &payload_bytes,
             BasicProperties::default().with_delivery_mode(2),
         )
-        .await
-        .map_err(|e| format!("Failed to publish message: {}", e))?
-        .await
-        .map_err(|e| format!("Failed to confirm message delivery: {}", e))?;
+        .await;
+
+    let publish_confirmation = match publish_result {
+        Ok(confirmation) => confirmation,
+        Err(e) => {
+            let error_msg = format!("Failed to publish message: {}", e);
+            eprintln!("{}", error_msg);
+            return Err(error_msg.into());
+        }
+    };
+
+    if let Err(e) = publish_confirmation.await {
+        let error_msg = format!("Failed to confirm message delivery: {}", e);
+        eprintln!("{}", error_msg);
+        return Err(error_msg.into());
+    }
 
     Ok(())
 }
@@ -143,12 +161,57 @@ async fn close_connection_gracefully(conn: Connection, reason: &str) {
 pub async fn publisher() -> Response {
     let start = Instant::now();
     println!("===== Starting RabbitMQ Producer =====");
+    let conn = create_connection().await.unwrap();
+    let channel = setup_channel_and_queue(&conn).await.unwrap();
+
+    let payload = PayloadMessage {
+        id: Uuid::new_v4().to_string(),
+        message: "Hello, world!".to_string(),
+    };
+    let messages = serde_json::to_vec(&payload).unwrap();
+
+    let publish_result = channel
+        .basic_publish(
+            "",
+            QUEUE_NAME,
+            BasicPublishOptions::default(),
+            &messages,
+            BasicProperties::default().with_delivery_mode(2),
+        )
+        .await;
+
+    let publish_confirmation = match publish_result {
+        Ok(confirmation) => confirmation,
+        Err(e) => {
+            let error_msg = format!("Failed to publish message: {}", e);
+            eprintln!("{}", error_msg);
+            return (StatusCode::INTERNAL_SERVER_ERROR, error_msg).into_response();
+        }
+    };
+
+    if let Err(e) = publish_confirmation.await {
+        let error_msg = format!("Failed to confirm message delivery: {}", e);
+        eprintln!("{}", error_msg);
+        return (StatusCode::INTERNAL_SERVER_ERROR, error_msg).into_response();
+    }
+
+    let elapsed = start.elapsed();
+    let success_message = format!("[PRODUCER] Successfully messages in {:?}", elapsed);
+
+    println!("{}", success_message);
+    (StatusCode::OK, success_message).into_response()
+}
+
+pub async fn publisher_with_task() -> Response {
+    let start = Instant::now();
+    println!("===== Starting RabbitMQ Producer =====");
 
     let config = ProducerConfig::default();
     let total_messages = (config.producer_count * config.iterations_per_producer) as u64;
 
     let mut tasks = Vec::with_capacity(config.producer_count as usize);
-
+    println!("Producer count: {}", config.producer_count);
+    println!("tasks: {}", tasks.len());
     for producer_id in 0..config.producer_count {
         let config_clone = config.clone();
         let task = tokio::spawn(async move { run_producer_task(producer_id, &config_clone).await });

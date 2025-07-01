@@ -4,6 +4,7 @@ FROM rust:latest as builder
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
+COPY templates ./templates
 
 # Build the application
 RUN cargo build --release
@@ -24,6 +25,9 @@ WORKDIR /app
 
 # Copy the built binary
 COPY --from=builder /app/target/release/rust-api /app/rust-api
+
+# Copy templates to runtime stage (needed for template loading)
+COPY --from=builder /app/templates ./templates
 
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app

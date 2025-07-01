@@ -3,11 +3,12 @@ use axum::{
     Router,
 };
 
-use crate::controller::mqtt::{consumer, publisher};
+use crate::controller::mqtt::{consumer, publisher, publisher_with_task};
 
 pub async fn mqtt_router() -> Router {
     let router = Router::new()
-        .route("/pub", post(publisher))
+        .route("/publisher", post(publisher))
+        .route("/pub", post(publisher_with_task))
         .route("/consume", get(consumer));
     router
 }
