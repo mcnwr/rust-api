@@ -1,0 +1,56 @@
+# Rust build artifacts
+target/
+*.pdb
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+CHANGELOG.md
+LICENSE
+
+# Test files
+tests/
+k6-performance-test.js
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Task Master
+.taskmaster/
+.cursor/
+.roo/
+.clinerules/
+.windsurf/
+.trae/
+.github/
+.roomodes
+AGENTS.md
+CLAUDE.md
+
+# Rust crash reports
+rustc-ice-* 
