@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for Rust API
-FROM rust:latest as builder
+FROM rust:latest AS builder
 
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
