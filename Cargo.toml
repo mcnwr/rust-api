@@ -2,6 +2,15 @@
 name = "rust-api"
 version = "0.1.0"
 edition = "2021"
+default-run = "main"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[[bin]]
+name = "lambda"
+path = "src/lambda.rs"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
@@ -21,6 +30,12 @@ chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 uuid = { version = "1.8.0", features = ["v4"] }
+
+# AWS Lambda dependencies
+lambda_runtime = "0.8"
+lambda_http = "0.8"
+tokio-stream = "0.1"
+bytes = "1.0"
 
 [dev-dependencies]
 aws-config = "1.1.7"

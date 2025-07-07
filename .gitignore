@@ -25,3 +25,9 @@ node_modules/
 # Task files
 # tasks.json
 # tasks/ 
+
+# Lambda build artifacts
+target/lambda/
+.aws-sam/
+samconfig.toml
+rust-api-lambda.zip 
