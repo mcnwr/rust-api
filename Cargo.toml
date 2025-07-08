@@ -2,15 +2,10 @@
 name = "rust-api"
 version = "0.1.0"
 edition = "2021"
-default-run = "main"
 
 [[bin]]
-name = "main"
+name = "rust-api"
 path = "src/main.rs"
-
-[[bin]]
-name = "lambda"
-path = "src/lambda.rs"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }

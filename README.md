@@ -49,7 +49,7 @@ docker-compose up -d
 sleep 30
 
 # Verify the API is running
-curl http://localhost:3000/
+curl http://localhost:8000/
 ```
 
 ### 4. Run Performance Tests
@@ -73,7 +73,7 @@ After running tests, you have multiple ways to view results:
 
 ```bash
 # Open the performance dashboard in your browser
-open http://localhost:3000/reports
+open http://localhost:8000/reports
 ```
 
 #### Option B: HTML Reports
@@ -271,19 +271,19 @@ Your Rust API includes a built-in performance viewer:
 docker-compose up -d
 
 # Open dashboard pages
-open http://localhost:3000/           # Home dashboard
-open http://localhost:3000/reports    # All reports
-open http://localhost:3000/reports/latest  # Latest report
+open http://localhost:8000/           # Home dashboard
+open http://localhost:8000/reports    # All reports
+open http://localhost:8000/reports/latest  # Latest report
 ```
 
 ### API Endpoints for Programmatic Access
 
 ```bash
 # Get all reports as JSON
-curl http://localhost:3000/api/reports
+curl http://localhost:8000/api/reports
 
 # Get specific report data
-curl http://localhost:3000/api/reports/{report_id}
+curl http://localhost:8000/api/reports/{report_id}
 ```
 
 ## 🐛 Troubleshooting Guide
@@ -347,14 +347,14 @@ docker stats
 # Edit k6 script to add longer ramp-up period
 
 # Check individual endpoints
-curl -w "Time: %{time_total}s\n" http://localhost:3000/
+curl -w "Time: %{time_total}s\n" http://localhost:8000/
 ```
 
 ### 5. Performance Dashboard Not Loading
 
 ```bash
 # Verify Rust API is running
-curl http://localhost:3000/
+curl http://localhost:8000/
 
 # Check templates directory
 ls -la templates/

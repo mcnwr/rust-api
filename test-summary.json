@@ -1,178 +1,178 @@
 {
-    "metrics": {
-        "data_received": {
-            "rate": 5093.649762902673,
-            "count": 257345
-        },
-        "mqtt_publish_response_time": {
-            "max": 102,
-            "p(90)": 2,
-            "p(95)": 3,
-            "avg": 1.9278033794162825,
-            "min": 0,
-            "med": 1,
-            "thresholds": {
-                "p(95)<1000": false,
-                "p(99)<2000": false
-            }
-        },
-        "http_req_receiving": {
-            "avg": 0.07262423312883437,
-            "min": 0.015,
-            "med": 0.049,
-            "max": 6.085,
-            "p(90)": 0.088,
-            "p(95)": 0.11744999999999997
-        },
-        "mqtt_publish_errors": {
-            "passes": 0,
-            "fails": 0,
-            "thresholds": {
-                "rate<0.1": false
-            },
-            "value": 0
-        },
-        "http_req_connecting": {
-            "min": 0,
-            "med": 0,
-            "max": 0.69,
-            "p(90)": 0,
-            "p(95)": 0,
-            "avg": 0.01141411042944785
-        },
-        "http_req_tls_handshaking": {
-            "max": 0,
-            "p(90)": 0,
-            "p(95)": 0,
-            "avg": 0,
-            "min": 0,
-            "med": 0
-        },
-        "checks": {
-            "passes": 2604,
-            "fails": 0,
-            "value": 1
-        },
-        "http_req_duration{expected_response:true}": {
-            "avg": 1.6987055214723934,
-            "min": 0.396,
-            "med": 0.9035,
-            "max": 101.348,
-            "p(90)": 1.7311,
-            "p(95)": 2.6327499999999997
-        },
-        "http_reqs": {
-            "rate": 12.905087122005645,
-            "count": 652
-        },
-        "http_req_waiting": {
-            "p(95)": 2.456049999999995,
-            "avg": 1.5526656441717788,
-            "min": 0.352,
-            "med": 0.818,
-            "max": 97.631,
-            "p(90)": 1.5843
-        },
-        "http_req_failed": {
-            "passes": 0,
-            "fails": 652,
-            "thresholds": {
-                "rate<0.1": false
-            },
-            "value": 0
-        },
-        "http_req_blocked": {
-            "avg": 0.025253067484662533,
-            "min": 0.002,
-            "med": 0.007,
-            "max": 1.794,
-            "p(90)": 0.013900000000000015,
-            "p(95)": 0.023799999999999884
-        },
-        "iteration_duration": {
-            "min": 502.840417,
-            "med": 1006.098041,
-            "max": 1592.390292,
-            "p(90)": 1403.538708,
-            "p(95)": 1463.5830005,
-            "avg": 1004.8950562841787
-        },
-        "vus_max": {
-            "min": 20,
-            "max": 20,
-            "value": 20
-        },
-        "data_sent": {
-            "count": 148227,
-            "rate": 2933.868633180262
-        },
-        "iterations": {
-            "count": 651,
-            "rate": 12.88529404359766
-        },
-        "http_req_duration": {
-            "p(95)": 2.6327499999999997,
-            "avg": 1.6987055214723934,
-            "min": 0.396,
-            "med": 0.9035,
-            "max": 101.348,
-            "p(90)": 1.7311
-        },
-        "vus": {
-            "value": 2,
-            "min": 1,
-            "max": 20
-        },
-        "http_req_sending": {
-            "med": 0.03,
-            "max": 14.692,
-            "p(90)": 0.055,
-            "p(95)": 0.07844999999999998,
-            "avg": 0.07341564417177918,
-            "min": 0.008
-        },
-        "mqtt_publish_success": {
-            "count": 651,
-            "rate": 12.88529404359766
-        }
+  "metrics": {
+    "data_received": {
+      "rate": 5093.649762902673,
+      "count": 257345
     },
-    "setup_data": {
-        "testStartTime": 1751301984558
+    "mqtt_publish_response_time": {
+      "max": 102,
+      "p(90)": 2,
+      "p(95)": 3,
+      "avg": 1.9278033794162825,
+      "min": 0,
+      "med": 1,
+      "thresholds": {
+        "p(95)<1000": false,
+        "p(99)<2000": false
+      }
     },
-    "root_group": {
-        "name": "",
-        "path": "",
-        "id": "d41d8cd98f00b204e9800998ecf8427e",
-        "groups": {},
-        "checks": {
-                "MQTT publish status is 200": {
-                    "name": "MQTT publish status is 200",
-                    "path": "::MQTT publish status is 200",
-                    "id": "e0691ee9f77a29348c976680a3e61961",
-                    "passes": 651,
-                    "fails": 0
-                },
-                "MQTT publish response time OK": {
-                    "name": "MQTT publish response time OK",
-                    "path": "::MQTT publish response time OK",
-                    "id": "ddb6a2939b13dc2c7cbdd19279ed1667",
-                    "passes": 651,
-                    "fails": 0
-                },
-                "MQTT publish response has body": {
-                    "path": "::MQTT publish response has body",
-                    "id": "051cf81a246e22368bfa85e3413ded0a",
-                    "passes": 651,
-                    "fails": 0,
-                    "name": "MQTT publish response has body"
-                },
-                "MQTT publish response contains success": {
-                    "name": "MQTT publish response contains success",
-                    "path": "::MQTT publish response contains success",
-                    "id": "1d8d624ef74ee1f83c473e87cee6fef8",
-                    "passes": 651,
-                    "fails": 0
-                }
-            }
+    "http_req_receiving": {
+      "avg": 0.07262423312883437,
+      "min": 0.015,
+      "med": 0.049,
+      "max": 6.085,
+      "p(90)": 0.088,
+      "p(95)": 0.11744999999999997
+    },
+    "mqtt_publish_errors": {
+      "passes": 0,
+      "fails": 0,
+      "thresholds": {
+        "rate<0.1": false
+      },
+      "value": 0
+    },
+    "http_req_connecting": {
+      "min": 0,
+      "med": 0,
+      "max": 0.69,
+      "p(90)": 0,
+      "p(95)": 0,
+      "avg": 0.01141411042944785
+    },
+    "http_req_tls_handshaking": {
+      "max": 0,
+      "p(90)": 0,
+      "p(95)": 0,
+      "avg": 0,
+      "min": 0,
+      "med": 0
+    },
+    "checks": {
+      "passes": 2604,
+      "fails": 0,
+      "value": 1
+    },
+    "http_req_duration{expected_response:true}": {
+      "avg": 1.6987055214723934,
+      "min": 0.396,
+      "med": 0.9035,
+      "max": 101.348,
+      "p(90)": 1.7311,
+      "p(95)": 2.6327499999999997
+    },
+    "http_reqs": {
+      "rate": 12.905087122005645,
+      "count": 652
+    },
+    "http_req_waiting": {
+      "p(95)": 2.456049999999995,
+      "avg": 1.5526656441717788,
+      "min": 0.352,
+      "med": 0.818,
+      "max": 97.631,
+      "p(90)": 1.5843
+    },
+    "http_req_failed": {
+      "passes": 0,
+      "fails": 652,
+      "thresholds": {
+        "rate<0.1": false
+      },
+      "value": 0
+    },
+    "http_req_blocked": {
+      "avg": 0.025253067484662533,
+      "min": 0.002,
+      "med": 0.007,
+      "max": 1.794,
+      "p(90)": 0.013900000000000015,
+      "p(95)": 0.023799999999999884
+    },
+    "iteration_duration": {
+      "min": 502.840417,
+      "med": 1006.098041,
+      "max": 1592.390292,
+      "p(90)": 1403.538708,
+      "p(95)": 1463.5880005,
+      "avg": 1004.8950562841787
+    },
+    "vus_max": {
+      "min": 20,
+      "max": 20,
+      "value": 20
+    },
+    "data_sent": {
+      "count": 148227,
+      "rate": 2933.868633180262
+    },
+    "iterations": {
+      "count": 651,
+      "rate": 12.88529404359766
+    },
+    "http_req_duration": {
+      "p(95)": 2.6327499999999997,
+      "avg": 1.6987055214723934,
+      "min": 0.396,
+      "med": 0.9035,
+      "max": 101.348,
+      "p(90)": 1.7311
+    },
+    "vus": {
+      "value": 2,
+      "min": 1,
+      "max": 20
+    },
+    "http_req_sending": {
+      "med": 0.03,
+      "max": 14.692,
+      "p(90)": 0.055,
+      "p(95)": 0.07844999999999998,
+      "avg": 0.07341564417177918,
+      "min": 0.008
+    },
+    "mqtt_publish_success": {
+      "count": 651,
+      "rate": 12.88529404359766
     }
+  },
+  "setup_data": {
+    "testStartTime": 1751301984558
+  },
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": {},
+    "checks": {
+      "MQTT publish status is 200": {
+        "name": "MQTT publish status is 200",
+        "path": "::MQTT publish status is 200",
+        "id": "e0691ee9f77a29348c976680a3e61961",
+        "passes": 651,
+        "fails": 0
+      },
+      "MQTT publish response time OK": {
+        "name": "MQTT publish response time OK",
+        "path": "::MQTT publish response time OK",
+        "id": "ddb6a2939b13dc2c7cbdd19279ed1667",
+        "passes": 651,
+        "fails": 0
+      },
+      "MQTT publish response has body": {
+        "path": "::MQTT publish response has body",
+        "id": "051cf81a246e22368bfa85e3413ded0a",
+        "passes": 651,
+        "fails": 0,
+        "name": "MQTT publish response has body"
+      },
+      "MQTT publish response contains success": {
+        "name": "MQTT publish response contains success",
+        "path": "::MQTT publish response contains success",
+        "id": "1d8d624ef74ee1f83c473e87cee6fef8",
+        "passes": 651,
+        "fails": 0
+      }
+    }
+  }
 }

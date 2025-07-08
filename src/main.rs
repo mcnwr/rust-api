@@ -1,11 +1,11 @@
 use axum::Router;
 use std::net::SocketAddr;
 mod controller;
-mod http_handler;
+mod lambda;
 mod model;
 
 mod routes;
-use http_handler::function_handler;
+use lambda::function_handler;
 use lambda_http::service_fn;
 use routes::routes;
 
@@ -23,7 +23,7 @@ async fn main() {
         // Running as regular web server with Axum
         let app = Router::new().merge(routes().await);
 
-        let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+        let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
 
         println!("🚀 Server starting on http://{}", addr);
         println!("📊 Performance Reports available at http://{}/", addr);

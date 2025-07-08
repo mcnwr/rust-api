@@ -96,7 +96,7 @@ http_reqs......................: 2912 58.24/s
 
 ### 1. Web Dashboard (Recommended)
 
-Open http://localhost:3000/reports to see:
+Open http://localhost:8000/reports to see:
 
 #### Dashboard Overview
 
@@ -208,7 +208,7 @@ http_req_duration..............: avg=750ms    p(95)=1.2s    max=5.8s
 
 ```bash
 # Check if services are healthy
-curl -w "Total time: %{time_total}s\n" http://localhost:3000/
+curl -w "Total time: %{time_total}s\n" http://localhost:8000/
 
 # Monitor during test
 docker stats --no-stream
