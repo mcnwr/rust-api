@@ -57,24 +57,14 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            # Create app directory if it doesn't exist
-            mkdir -p /srv/rust-api/
+            # Create and use app directory in home folder
+            mkdir -p ~/rust-api
+            cd ~/rust-api
 
-            # Navigate to the app directory
-            cd /srv/rust-api/
-
-      - name: Copy Docker Compose file
-        run: scp -i ~/.ssh/private_key -P ${{ secrets.EC2_PORT }} docker-compose.yml ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/srv/rust-api/
-
-      - name: Start Services
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT }}
-          script: |
-            cd /srv/rust-api/
+            # Copy docker-compose file
+            cat > docker-compose.yml << 'EOL'
+            $(cat docker-compose.yml)
+            EOL
 
             # Create or update .env file with explicit port value
             cat > .env << EOL
