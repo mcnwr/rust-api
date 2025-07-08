@@ -68,7 +68,7 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           script: |
             # Create and use app directory in home folder
-            mkdir -p ~/srv/rust-api
+            # mkdir -p ~/srv/rust-api
             cd ~/srv/rust-api
 
             # Copy docker-compose file
