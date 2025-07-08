@@ -57,7 +57,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           source: "docker-compose.yml"
-          target: "~/"
+          target: "/tmp/"
+          strip_components: 1
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -67,10 +68,19 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            # Setup directory with proper permissions
+            # Create directory if it doesn't exist and set permissions
             sudo mkdir -p /srv/rust-api
-            sudo chown $USER:$USER /srv/rust-api
-            mv ~/docker-compose.yml /srv/rust-api/
+            sudo chown -R $USER:$USER /srv/rust-api
+
+            # Debug: Check if files exist in /tmp
+            ls -la /tmp/docker-compose.yml
+
+            # Move files to deployment directory
+            cp /tmp/docker-compose.yml /srv/rust-api/
+
+            # Debug: Check if files were copied
+            ls -la /srv/rust-api/
+
             cd /srv/rust-api
 
             # Create or update .env file with explicit port value
@@ -82,11 +92,29 @@ jobs:
             RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
             EOL
 
-            # Pull the latest Docker images
+            # Debug: Check .env file
+            echo "Contents of .env file:"
+            cat .env
+
+            # Debug: Check if docker-compose is installed
+            docker compose version || echo "docker-compose not found"
+
+            # Pull the latest Docker images with debug output
+            echo "Pulling Docker images..."
             docker compose pull
 
-            # Restart the services in detached mode
+            # Stop any existing containers
+            echo "Stopping existing containers..."
+            docker compose down
+
+            # Start the services in detached mode with debug output
+            echo "Starting containers..."
             docker compose up -d
+
+            # Check container status
+            echo "Container status:"
+            docker compose ps
+            docker compose logs
 
             # Optional: Clean up old, unused images to save space
             docker image prune -af --force
