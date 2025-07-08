@@ -27,14 +27,23 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest # Replace 'rust-api' with your image name
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
-      - name: Configure SSH
+      - name: Configure AWS credentials
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
-          mkdir -p ~/.ssh/
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/private_key
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
           chmod 600 ~/.ssh/private_key
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          cat >> ~/.ssh/config << EOF
+          Host ec2
+            HostName ${{ secrets.EC2_HOST }}
+            User ${{ secrets.EC2_USERNAME }}
+            IdentityFile ~/.ssh/private_key
+            StrictHostKeyChecking no
+          EOF
+          chmod 600 ~/.ssh/config
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -42,12 +51,12 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          debug: true
+          port: ${{ secrets.EC2_PORT }}
           script: |
             # Navigate to the app directory
             cd /srv/rust-api/
 
-            # Create or update .env file
+            # Create or update .env file with explicit port value
             cat > .env << EOL
             PORT=${{ secrets.PORT }}
             RABBITMQ_USER=${{ secrets.RABBITMQ_USER }}
@@ -63,4 +72,4 @@ jobs:
             docker compose up -d
 
             # Optional: Clean up old, unused images to save space
-            docker image prune -af
+            docker image prune -af --force
