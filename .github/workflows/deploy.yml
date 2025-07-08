@@ -57,7 +57,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           source: "docker-compose.yml"
-          target: "/srv/rust-api/"
+          target: "~/"
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -67,14 +67,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            # Create and use app directory in home folder
-            # mkdir -p ~/srv/rust-api
-            cd ~/srv/rust-api
-
-            # Copy docker-compose file
-            cat > docker-compose.yml << 'EOL'
-            $(cat docker-compose.yml)
-            EOL
+            # Setup directory with proper permissions
+            sudo mkdir -p /srv/rust-api
+            sudo chown $USER:$USER /srv/rust-api
+            mv ~/docker-compose.yml /srv/rust-api/
+            cd /srv/rust-api
 
             # Create or update .env file with explicit port value
             cat > .env << EOL
