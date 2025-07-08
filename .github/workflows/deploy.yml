@@ -36,14 +36,18 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
           chmod 600 ~/.ssh/private_key
+          ls -la ~/.ssh/private_key
+          ssh-keygen -l -f ~/.ssh/private_key || echo "Invalid key format"
           cat >> ~/.ssh/config << EOF
-          Host ec2
-            HostName ${{ secrets.EC2_HOST }}
-            User ${{ secrets.EC2_USERNAME }}
+          Host *
             IdentityFile ~/.ssh/private_key
             StrictHostKeyChecking no
+            UserKnownHostsFile=/dev/null
           EOF
           chmod 600 ~/.ssh/config
+
+      - name: Test SSH Connection
+        run: ssh -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"'
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -53,7 +57,23 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
+            # Create app directory if it doesn't exist
+            mkdir -p /srv/rust-api/
+
             # Navigate to the app directory
+            cd /srv/rust-api/
+
+      - name: Copy Docker Compose file
+        run: scp -i ~/.ssh/private_key -P ${{ secrets.EC2_PORT }} docker-compose.yml ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/srv/rust-api/
+
+      - name: Start Services
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          script: |
             cd /srv/rust-api/
 
             # Create or update .env file with explicit port value
