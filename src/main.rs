@@ -5,12 +5,16 @@ mod lambda;
 mod model;
 
 mod routes;
+use dotenv::dotenv;
 use lambda::function_handler;
 use lambda_http::service_fn;
 use routes::routes;
 
 #[tokio::main]
 async fn main() {
+    // Load .env file
+    dotenv().ok();
+
     tracing_subscriber::fmt::init();
 
     // Check if running in Lambda environment
@@ -23,7 +27,12 @@ async fn main() {
         // Running as regular web server with Axum
         let app = Router::new().merge(routes().await);
 
-        let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+        let port: u16 = std::env::var("PORT")
+            .expect("PORT environment variable is required")
+            .parse()
+            .expect("PORT must be a valid number between 1 and 65535");
+
+        let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
         println!("🚀 Server starting on http://{}", addr);
         println!("📊 Performance Reports available at http://{}/", addr);
