@@ -3,7 +3,7 @@ name: Deploy Docker App to AWS EC2
 on:
   push:
     branches:
-      - main # Atau branch default Anda
+      - main
 
 jobs:
   build-and-deploy:
@@ -29,13 +29,11 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
-      # --- PERBAIKAN DI SINI ---
-      # Menambahkan 'echo ""' untuk menjamin format yang benar
-      - name: Read docker-compose.yml content
+      # PERUBAHAN: Membaca file 'docker-compose.prod.yml' yang baru
+      - name: Read PRODUCTION docker-compose.yml content
         run: |
           echo "DOCKER_COMPOSE_CONTENT<<EOF" >> $GITHUB_ENV
-          cat docker-compose.yml >> $GITHUB_ENV
-          # PERBAIKAN: Menjamin ada baris baru (newline) sebelum penutup EOF
+          cat docker-compose.prod.yml >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
@@ -48,16 +46,17 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           script: |
             set -e
-
             TARGET_DIR="/srv/rust-api"
+            # PERUBAHAN: Menentukan nama file produksi
+            COMPOSE_FILE_NAME="docker-compose.prod.yml"
 
             echo "--> Preparing directory $TARGET_DIR"
             sudo mkdir -p $TARGET_DIR
             sudo chown $USER:$USER $TARGET_DIR
             cd $TARGET_DIR
 
-            echo "--> Creating docker-compose.yml"
-            cat << 'EOF' > docker-compose.yml
+            echo "--> Creating $COMPOSE_FILE_NAME"
+            cat << 'EOF' > $COMPOSE_FILE_NAME
             ${{ env.DOCKER_COMPOSE_CONTENT }}
             EOF
 
@@ -73,14 +72,15 @@ jobs:
             echo "--> Logging in to Docker Hub on the EC2 server"
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
+            # PERUBAHAN: Menggunakan flag '-f' untuk semua perintah compose
             echo "--> Stopping existing containers..."
-            docker compose down
+            docker compose -f $COMPOSE_FILE_NAME down
 
             echo "--> Pulling latest images..."
-            docker compose pull
+            docker compose -f $COMPOSE_FILE_NAME pull
 
             echo "--> Starting new containers..."
-            docker compose up -d
+            docker compose -f $COMPOSE_FILE_NAME up -d
 
             echo "--> Final container status:"
-            docker compose ps
+            docker compose -f $COMPOSE_FILE_NAME ps
