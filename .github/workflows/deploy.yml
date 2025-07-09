@@ -29,12 +29,14 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
-      # --- LANGKAH PENTING YANG HILANG SEBELUMNYA ---
-      # Baca isi file docker-compose.yml dan simpan ke environment variable
+      # --- PERBAIKAN DI SINI ---
+      # Menggunakan metode yang lebih andal untuk membaca file multi-baris
       - name: Read docker-compose.yml content
-        run: echo "DOCKER_COMPOSE_CONTENT=$(cat docker-compose.yml)" >> $GITHUB_ENV
+        run: |
+          echo "DOCKER_COMPOSE_CONTENT<<EOF" >> $GITHUB_ENV
+          cat docker-compose.yml >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      # Langkah deploy yang sekarang akan menerima isi file dari langkah di atas
       - name: Deploy and Run on EC2
         uses: appleboy/ssh-action@master
         with:
@@ -52,7 +54,6 @@ jobs:
             sudo chown $USER:$USER $TARGET_DIR
             cd $TARGET_DIR
 
-            # Sekarang, variabel ini akan berisi konten dari file Anda
             echo "--> Creating docker-compose.yml"
             cat << 'EOF' > docker-compose.yml
             ${{ env.DOCKER_COMPOSE_CONTENT }}
