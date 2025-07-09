@@ -29,9 +29,12 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
-      # ------------------------------------------------------------------
-      # SEMUA LANGKAH DEPLOY DIGABUNGKAN MENJADI SATU UNTUK KEANDALAN
-      # ------------------------------------------------------------------
+      # --- LANGKAH PENTING YANG HILANG SEBELUMNYA ---
+      # Baca isi file docker-compose.yml dan simpan ke environment variable
+      - name: Read docker-compose.yml content
+        run: echo "DOCKER_COMPOSE_CONTENT=$(cat docker-compose.yml)" >> $GITHUB_ENV
+
+      # Langkah deploy yang sekarang akan menerima isi file dari langkah di atas
       - name: Deploy and Run on EC2
         uses: appleboy/ssh-action@master
         with:
@@ -40,25 +43,21 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            # Hentikan skrip segera jika ada perintah yang gagal
             set -e
 
             TARGET_DIR="/srv/rust-api"
 
-            # 1. Pastikan direktori ada dan dimiliki oleh pengguna saat ini
             echo "--> Preparing directory $TARGET_DIR"
             sudo mkdir -p $TARGET_DIR
             sudo chown $USER:$USER $TARGET_DIR
             cd $TARGET_DIR
 
-            # 2. Buat file docker-compose.yml secara langsung di server
-            # Ini lebih andal daripada menggunakan scp
+            # Sekarang, variabel ini akan berisi konten dari file Anda
             echo "--> Creating docker-compose.yml"
             cat << 'EOF' > docker-compose.yml
             ${{ env.DOCKER_COMPOSE_CONTENT }}
             EOF
 
-            # 3. Buat file .env dari secrets
             echo "--> Creating .env file"
             cat << EOL > .env
             PORT=${{ secrets.PORT }}
@@ -68,24 +67,17 @@ jobs:
             RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
             EOL
 
-            # 4. 🔑 LOGIN KE DOCKER HUB DI SERVER EC2 (LANGKAH PALING PENTING)
             echo "--> Logging in to Docker Hub on the EC2 server"
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # 5. Hentikan container lama (jika ada) untuk menghindari konflik
             echo "--> Stopping existing containers..."
             docker compose down
 
-            # 6. Tarik image terbaru dan jalankan container
             echo "--> Pulling latest images..."
             docker compose pull
+
             echo "--> Starting new containers..."
             docker compose up -d
 
-            # 7. Tampilkan status container sebagai konfirmasi
             echo "--> Final container status:"
             docker compose ps
-
-            # 8. Bersihkan image lama yang tidak terpakai
-            echo "--> Pruning old images"
-            docker image prune -af
