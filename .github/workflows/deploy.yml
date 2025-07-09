@@ -3,7 +3,7 @@ name: Deploy Docker App to AWS EC2
 on:
   push:
     branches:
-      - main # Or your default branch
+      - main # Atau branch default Anda
 
 jobs:
   build-and-deploy:
@@ -29,27 +29,10 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
-      - name: Configure AWS credentials
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
-          chmod 600 ~/.ssh/private_key
-          ls -la ~/.ssh/private_key
-          ssh-keygen -l -f ~/.ssh/private_key || echo "Invalid key format"
-          cat >> ~/.ssh/config << EOF
-          Host *
-            IdentityFile ~/.ssh/private_key
-            StrictHostKeyChecking no
-            UserKnownHostsFile=/dev/null
-          EOF
-          chmod 600 ~/.ssh/config
-
-      - name: Test SSH Connection
-        run: ssh -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"'
-
-      - name: Prepare Server Directory
+      # ------------------------------------------------------------------
+      # SEMUA LANGKAH DEPLOY DIGABUNGKAN MENJADI SATU UNTUK KEANDALAN
+      # ------------------------------------------------------------------
+      - name: Deploy and Run on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -57,37 +40,27 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            sudo mkdir -p /srv/rust-api
-            sudo chown -R $USER:$USER /srv/rust-api
-            echo "Directory prepared"
+            # Hentikan skrip segera jika ada perintah yang gagal
+            set -e
 
-      - name: Copy docker-compose.yml to Server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT }}
-          source: "docker-compose.yml"
-          target: "/srv/rust-api/"
-          overwrite: true
+            TARGET_DIR="/srv/rust-api"
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT }}
-          script: |
-            cd /srv/rust-api
+            # 1. Pastikan direktori ada dan dimiliki oleh pengguna saat ini
+            echo "--> Preparing directory $TARGET_DIR"
+            sudo mkdir -p $TARGET_DIR
+            sudo chown $USER:$USER $TARGET_DIR
+            cd $TARGET_DIR
 
-            # Debug: Check directory contents
-            echo "Current directory contents:"
-            ls -la
+            # 2. Buat file docker-compose.yml secara langsung di server
+            # Ini lebih andal daripada menggunakan scp
+            echo "--> Creating docker-compose.yml"
+            cat << 'EOF' > docker-compose.yml
+            ${{ env.DOCKER_COMPOSE_CONTENT }}
+            EOF
 
-            # Create or update .env file with explicit port value
-            cat > .env << EOL
+            # 3. Buat file .env dari secrets
+            echo "--> Creating .env file"
+            cat << EOL > .env
             PORT=${{ secrets.PORT }}
             RABBITMQ_USER=${{ secrets.RABBITMQ_USER }}
             RABBITMQ_PASS=${{ secrets.RABBITMQ_PASS }}
@@ -95,28 +68,24 @@ jobs:
             RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
             EOL
 
-            # Debug: Verify files
-            echo "Verifying docker-compose.yml:"
-            cat docker-compose.yml
+            # 4. 🔑 LOGIN KE DOCKER HUB DI SERVER EC2 (LANGKAH PALING PENTING)
+            echo "--> Logging in to Docker Hub on the EC2 server"
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            echo "Verifying .env file:"
-            cat .env
-
-            # Stop any existing containers
-            echo "Stopping existing containers..."
+            # 5. Hentikan container lama (jika ada) untuk menghindari konflik
+            echo "--> Stopping existing containers..."
             docker compose down
 
-            # Pull and start the services
-            echo "Pulling latest images..."
+            # 6. Tarik image terbaru dan jalankan container
+            echo "--> Pulling latest images..."
             docker compose pull
-
-            echo "Starting containers..."
+            echo "--> Starting new containers..."
             docker compose up -d
 
-            # Check container status
-            echo "Container status:"
+            # 7. Tampilkan status container sebagai konfirmasi
+            echo "--> Final container status:"
             docker compose ps
-            docker compose logs
 
-            # Clean up old images
-            docker image prune -af --force
+            # 8. Bersihkan image lama yang tidak terpakai
+            echo "--> Pruning old images"
+            docker image prune -af
