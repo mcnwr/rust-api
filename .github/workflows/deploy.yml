@@ -49,6 +49,18 @@ jobs:
       - name: Test SSH Connection
         run: ssh -v ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"'
 
+      - name: Prepare Server Directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT }}
+          script: |
+            sudo mkdir -p /srv/rust-api
+            sudo chown -R $USER:$USER /srv/rust-api
+            echo "Directory prepared"
+
       - name: Copy docker-compose.yml to Server
         uses: appleboy/scp-action@master
         with:
@@ -57,8 +69,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           source: "docker-compose.yml"
-          target: "/tmp/"
-          strip_components: 1
+          target: "/srv/rust-api/"
+          overwrite: true
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -68,20 +80,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            # Create directory if it doesn't exist and set permissions
-            sudo mkdir -p /srv/rust-api
-            sudo chown -R $USER:$USER /srv/rust-api
-
-            # Debug: Check if files exist in /tmp
-            ls -la /tmp/docker-compose.yml
-
-            # Move files to deployment directory
-            cp /tmp/docker-compose.yml /srv/rust-api/
-
-            # Debug: Check if files were copied
-            ls -la /srv/rust-api/
-
             cd /srv/rust-api
+
+            # Debug: Check directory contents
+            echo "Current directory contents:"
+            ls -la
 
             # Create or update .env file with explicit port value
             cat > .env << EOL
@@ -92,22 +95,21 @@ jobs:
             RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
             EOL
 
-            # Debug: Check .env file
-            echo "Contents of .env file:"
+            # Debug: Verify files
+            echo "Verifying docker-compose.yml:"
+            cat docker-compose.yml
+
+            echo "Verifying .env file:"
             cat .env
-
-            # Debug: Check if docker-compose is installed
-            docker compose version || echo "docker-compose not found"
-
-            # Pull the latest Docker images with debug output
-            echo "Pulling Docker images..."
-            docker compose pull
 
             # Stop any existing containers
             echo "Stopping existing containers..."
             docker compose down
 
-            # Start the services in detached mode with debug output
+            # Pull and start the services
+            echo "Pulling latest images..."
+            docker compose pull
+
             echo "Starting containers..."
             docker compose up -d
 
@@ -116,5 +118,5 @@ jobs:
             docker compose ps
             docker compose logs
 
-            # Optional: Clean up old, unused images to save space
+            # Clean up old images
             docker image prune -af --force
