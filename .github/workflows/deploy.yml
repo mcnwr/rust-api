@@ -29,7 +29,6 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
-      # PERUBAHAN: Membaca file 'docker-compose.prod.yml' yang baru
       - name: Read PRODUCTION docker-compose.yml content
         run: |
           echo "DOCKER_COMPOSE_CONTENT<<EOF" >> $GITHUB_ENV
@@ -47,7 +46,6 @@ jobs:
           script: |
             set -e
             TARGET_DIR="/srv/rust-api"
-            # PERUBAHAN: Menentukan nama file produksi
             COMPOSE_FILE_NAME="docker-compose.prod.yml"
 
             echo "--> Preparing directory $TARGET_DIR"
@@ -60,6 +58,7 @@ jobs:
             ${{ env.DOCKER_COMPOSE_CONTENT }}
             EOF
 
+            # PERUBAHAN: Menambahkan nama image ke dalam file .env
             echo "--> Creating .env file"
             cat << EOL > .env
             PORT=${{ secrets.PORT }}
@@ -67,12 +66,13 @@ jobs:
             RABBITMQ_PASS=${{ secrets.RABBITMQ_PASS }}
             RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
             RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
+            DOCKER_IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/rust-api
+            IMAGE_TAG=latest
             EOL
 
             echo "--> Logging in to Docker Hub on the EC2 server"
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # PERUBAHAN: Menggunakan flag '-f' untuk semua perintah compose
             echo "--> Stopping existing containers..."
             docker compose -f $COMPOSE_FILE_NAME down
 

@@ -1,6 +1,6 @@
 services:
-  rust-api:  
-    image: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
+  rust-api:
+    image: ${DOCKER_IMAGE_NAME}:${IMAGE_TAG:-latest}
     ports:
       - "${PORT}:${PORT}"
     environment:
