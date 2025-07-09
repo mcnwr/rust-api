@@ -30,11 +30,13 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
       # --- PERBAIKAN DI SINI ---
-      # Menggunakan metode yang lebih andal untuk membaca file multi-baris
+      # Menambahkan 'echo ""' untuk menjamin format yang benar
       - name: Read docker-compose.yml content
         run: |
           echo "DOCKER_COMPOSE_CONTENT<<EOF" >> $GITHUB_ENV
           cat docker-compose.yml >> $GITHUB_ENV
+          # PERBAIKAN: Menjamin ada baris baru (newline) sebelum penutup EOF
+          echo "" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Deploy and Run on EC2
