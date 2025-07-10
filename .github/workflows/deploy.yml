@@ -44,43 +44,48 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            set -e
-            TARGET_DIR="/srv/rust-api"
-            COMPOSE_FILE_NAME="docker-compose.prod.yml"
+            # --- TAMBAHKAN BARIS DEBUG DI SINI ---
+             echo "--> Debug: Checking the value of EC2_PORT."
+             echo "--> Port from secret is: ${{ secrets.EC2_PORT }}"
+             # -------------------------------------
+               
+             set -e
+             TARGET_DIR="/srv/rust-api"
+             COMPOSE_FILE_NAME="docker-compose.prod.yml"
 
-            echo "--> Preparing directory $TARGET_DIR"
-            sudo mkdir -p $TARGET_DIR
-            sudo chown $USER:$USER $TARGET_DIR
-            cd $TARGET_DIR
+             echo "--> Preparing directory $TARGET_DIR"
+             sudo mkdir -p $TARGET_DIR
+             sudo chown $USER:$USER $TARGET_DIR
+             cd $TARGET_DIR
 
-            echo "--> Creating $COMPOSE_FILE_NAME"
-            cat << EOF > $COMPOSE_FILE_NAME
-            ${{ env.DOCKER_COMPOSE_CONTENT }}
-            EOF
+             echo "--> Creating $COMPOSE_FILE_NAME"
+             cat << EOF > $COMPOSE_FILE_NAME
+             ${{ env.DOCKER_COMPOSE_CONTENT }}
+             EOF
 
-            # PERUBAHAN: Menambahkan nama image ke dalam file .env
-            echo "--> Creating .env file"
-            cat << EOL > .env
-            PORT=${{ secrets.PORT }}
-            RABBITMQ_USER=${{ secrets.RABBITMQ_USER }}
-            RABBITMQ_PASS=${{ secrets.RABBITMQ_PASS }}
-            RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
-            RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
-            DOCKER_IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/rust-api
-            IMAGE_TAG=latest
-            EOL
+             # PERUBAHAN: Menambahkan nama image ke dalam file .env
+             echo "--> Creating .env file"
+             cat << EOL > .env
+             PORT=${{ secrets.PORT }}
+             RABBITMQ_USER=${{ secrets.RABBITMQ_USER }}
+             RABBITMQ_PASS=${{ secrets.RABBITMQ_PASS }}
+             RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
+             RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
+             DOCKER_IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/rust-api
+             IMAGE_TAG=latest
+             EOL
 
-            echo "--> Logging in to Docker Hub on the EC2 server"
-            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+             echo "--> Logging in to Docker Hub on the EC2 server"
+             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            echo "--> Stopping existing containers..."
-            docker compose -f $COMPOSE_FILE_NAME down
+             echo "--> Stopping existing containers..."
+             docker compose -f $COMPOSE_FILE_NAME down
 
-            echo "--> Pulling latest images..."
-            docker compose -f $COMPOSE_FILE_NAME pull
+             echo "--> Pulling latest images..."
+             docker compose -f $COMPOSE_FILE_NAME pull
 
-            echo "--> Starting new containers..."
-            docker compose -f $COMPOSE_FILE_NAME up -d
+             echo "--> Starting new containers..."
+             docker compose -f $COMPOSE_FILE_NAME up -d
 
-            echo "--> Final container status:"
-            docker compose -f $COMPOSE_FILE_NAME ps
+             echo "--> Final container status:"
+             docker compose -f $COMPOSE_FILE_NAME ps
