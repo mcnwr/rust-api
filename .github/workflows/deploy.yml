@@ -44,11 +44,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            # --- TAMBAHKAN BARIS DEBUG DI SINI ---
-             echo "--> Debug: Checking the value of EC2_PORT."
-             echo "--> Port from secret is: ${{ secrets.EC2_PORT }}"
-             # -------------------------------------
-               
+              
              set -e
              TARGET_DIR="/srv/rust-api"
              COMPOSE_FILE_NAME="docker-compose.prod.yml"
