@@ -48,19 +48,22 @@ jobs:
 
       - name: Deploy and Run on EC2
         uses: appleboy/ssh-action@master
+        env:
+          PORT: ${{ secrets.PORT }}
+          RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
+          RABBITMQ_PASS: ${{ secrets.RABBITMQ_PASS }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_MANAGEMENT_PORT: ${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
+          envs: PORT,RABBITMQ_USER,RABBITMQ_PASS,RABBITMQ_PORT,RABBITMQ_MANAGEMENT_PORT,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
           script: |
             set -e
-
-                    # --- TAMBAHKAN BARIS DEBUG DI SINI ---
-            echo "--> Debug: Checking secrets received on EC2."
-            echo "--> Username from secret is: [${DOCKERHUB_USERNAME}]"
-            echo "--> Token from secret is: [${DOCKERHUB_TOKEN:0:4}...]" # Hanya cetak 4 karakter pertama token untuk keamanan
-            # -------------------------------------
               
             TARGET_DIR="/srv/rust-api"
             COMPOSE_FILE_PATH="$TARGET_DIR/docker-compose.prod.yml"
