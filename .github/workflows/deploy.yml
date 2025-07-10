@@ -29,59 +29,93 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
-      - name: Read PRODUCTION docker-compose.yml content
-        run: |
-          echo "DOCKER_COMPOSE_CONTENT<<EOF" >> $GITHUB_ENV
-          cat docker-compose.prod.yml >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
       - name: Deploy and Run on EC2
         uses: appleboy/ssh-action@master
+        env: # <-- Tambahkan 'env' untuk meneruskan secrets
+          # Secrets untuk file .env
+          PORT: ${{ secrets.PORT }}
+          RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
+          RABBITMQ_PASS: ${{ secrets.RABBITMQ_PASS }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_MANAGEMENT_PORT: ${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
+          # Secrets untuk login Docker
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-              
-             set -e
-             TARGET_DIR="/srv/rust-api"
-             COMPOSE_FILE_NAME="docker-compose.prod.yml"
+            set -e
+            TARGET_DIR="/srv/rust-api"
+            COMPOSE_FILE_PATH="$TARGET_DIR/docker-compose.prod.yml"
 
-             echo "--> Preparing directory $TARGET_DIR"
-             sudo mkdir -p $TARGET_DIR
-             sudo chown $USER:$USER $TARGET_DIR
-             cd $TARGET_DIR
+            echo "--> Preparing directory $TARGET_DIR"
+            sudo mkdir -p $TARGET_DIR
+            sudo chown $USER:$USER $TARGET_DIR
+            cd $TARGET_DIR
 
-             echo "--> Creating $COMPOSE_FILE_NAME"
-             cat << EOF > $COMPOSE_FILE_NAME
-             ${{ env.DOCKER_COMPOSE_CONTENT }}
-             EOF
+            echo "--> Creating docker-compose.prod.yml"
+            # Kita akan membuat file langsung di sini, lebih sederhana dan andal
+            cat << EOF > "$COMPOSE_FILE_PATH"
+            services:
+              rust-api:
+                image: \${DOCKER_IMAGE_NAME}:\${IMAGE_TAG:-latest}
+                ports:
+                  - "\${PORT}:\${PORT}"
+                environment:
+                  - PORT=\${PORT}
+                  - RABBITMQ_URL=amqp://\${RABBITMQ_USER}:\${RABBITMQ_PASS}@rabbitmq:5672
+                depends_on:
+                  rabbitmq:
+                    condition: service_healthy
+                restart: unless-stopped
 
-             # PERUBAHAN: Menambahkan nama image ke dalam file .env
-             echo "--> Creating .env file"
-             cat << EOL > .env
-             PORT=${{ secrets.PORT }}
-             RABBITMQ_USER=${{ secrets.RABBITMQ_USER }}
-             RABBITMQ_PASS=${{ secrets.RABBITMQ_PASS }}
-             RABBITMQ_PORT=${{ secrets.RABBITMQ_PORT }}
-             RABBITMQ_MANAGEMENT_PORT=${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
-             DOCKER_IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/rust-api
-             IMAGE_TAG=latest
-             EOL
+              rabbitmq:
+                image: rabbitmq:3.12-management-alpine
+                ports:
+                  - "\${RABBITMQ_PORT}:\${RABBITMQ_PORT}"
+                  - "\${RABBITMQ_MANAGEMENT_PORT}:\${RABBITMQ_MANAGEMENT_PORT}"
+                environment:
+                  - RABBITMQ_DEFAULT_USER=\${RABBITMQ_USER}
+                  - RABBITMQ_DEFAULT_PASS=\${RABBITMQ_PASS}
+                volumes:
+                  - rabbitmq_data:/var/lib/rabbitmq
+                restart: unless-stopped
 
-             echo "--> Logging in to Docker Hub on the EC2 server"
-             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            volumes:
+              rabbitmq_data:
+                driver: local
 
-             echo "--> Stopping existing containers..."
-             docker compose -f $COMPOSE_FILE_NAME down
+            networks:
+              default:
+                driver: bridge
+            EOF
 
-             echo "--> Pulling latest images..."
-             docker compose -f $COMPOSE_FILE_NAME pull
+            echo "--> Creating .env file"
+            # Sekarang shell di EC2 bisa membaca variabel dari 'env' di atas
+            cat << EOL > .env
+            PORT=$PORT
+            RABBITMQ_USER=$RABBITMQ_USER
+            RABBITMQ_PASS=$RABBITMQ_PASS
+            RABBITMQ_PORT=$RABBITMQ_PORT
+            RABBITMQ_MANAGEMENT_PORT=$RABBITMQ_MANAGEMENT_PORT
+            DOCKER_IMAGE_NAME=$DOCKERHUB_USERNAME/rust-api
+            IMAGE_TAG=latest
+            EOL
 
-             echo "--> Starting new containers..."
-             docker compose -f $COMPOSE_FILE_NAME up -d
+            echo "--> Logging in to Docker Hub on the EC2 server"
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
-             echo "--> Final container status:"
-             docker compose -f $COMPOSE_FILE_NAME ps
+            echo "--> Stopping existing containers..."
+            docker compose -f "$COMPOSE_FILE_PATH" down
+
+            echo "--> Pulling latest images..."
+            docker compose -f "$COMPOSE_FILE_PATH" pull
+
+            echo "--> Starting new containers..."
+            docker compose -f "$COMPOSE_FILE_PATH" up -d
+
+            echo "--> Final container status:"
+            docker compose -f "$COMPOSE_FILE_PATH" ps
