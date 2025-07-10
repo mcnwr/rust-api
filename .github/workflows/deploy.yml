@@ -54,7 +54,7 @@ jobs:
             cd $TARGET_DIR
 
             echo "--> Creating $COMPOSE_FILE_NAME"
-            cat << 'EOF' > $COMPOSE_FILE_NAME
+            cat << EOF > $COMPOSE_FILE_NAME
             ${{ env.DOCKER_COMPOSE_CONTENT }}
             EOF
 
