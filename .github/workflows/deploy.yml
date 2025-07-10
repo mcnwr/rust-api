@@ -48,6 +48,13 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           script: |
             set -e
+
+                    # --- TAMBAHKAN BARIS DEBUG DI SINI ---
+            echo "--> Debug: Checking secrets received on EC2."
+            echo "--> Username from secret is: [${DOCKERHUB_USERNAME}]"
+            echo "--> Token from secret is: [${DOCKERHUB_TOKEN:0:4}...]" # Hanya cetak 4 karakter pertama token untuk keamanan
+            # -------------------------------------
+              
             TARGET_DIR="/srv/rust-api"
             COMPOSE_FILE_PATH="$TARGET_DIR/docker-compose.prod.yml"
 
