@@ -79,6 +79,7 @@ jobs:
 
             # --- Siapkan direktori dan pindah ke dalamnya ---
             sudo mkdir -p "$TARGET_DIR"
+            sudo chmod +x /srv
             sudo chown $USER:$USER "$TARGET_DIR"
             # Perintah krusial yang hilang: Pindah direktori kerja
             cd "$TARGET_DIR"
