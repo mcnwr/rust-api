@@ -6,6 +6,9 @@ services:
     environment:
       - PORT=${PORT}
       - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
+      - ACCESS_KEY=${ACCESS_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - REGION=${REGION}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -26,7 +29,7 @@ services:
       start_period: 40s
 
   rabbitmq:
-    image: rabbitmq:3.12-management-alpine
+    image: rabbitmq:3.13-management-alpine
     ports:
       - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
       - "${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}"
