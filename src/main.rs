@@ -1,10 +1,12 @@
 use axum::Router;
 use std::net::SocketAddr;
+mod config;
 mod controller;
 mod lambda;
 mod model;
 
 mod routes;
+use config::db::DynamoDbConfig;
 use dotenv::dotenv;
 use lambda::function_handler;
 use lambda_http::service_fn;
@@ -16,6 +18,30 @@ async fn main() {
     dotenv().ok();
 
     tracing_subscriber::fmt::init();
+
+    // Initialize DynamoDB connection
+    let _db_config = match DynamoDbConfig::new().await {
+        Ok(config) => {
+            println!("✅ DynamoDB connection established successfully");
+
+            // Test connection by listing tables
+            match config.list_tables().await {
+                Ok(tables) => {
+                    println!("📊 Available DynamoDB tables: {:?}", tables);
+                }
+                Err(e) => {
+                    println!("⚠️  Warning: Could not list tables: {}", e);
+                }
+            }
+
+            Some(config)
+        }
+        Err(e) => {
+            println!("❌ Failed to connect to DynamoDB: {}", e);
+            println!("⚠️  Continuing without DynamoDB connection");
+            None
+        }
+    };
 
     // Check if running in Lambda environment
     if std::env::var("AWS_LAMBDA_RUNTIME_API").is_ok() {

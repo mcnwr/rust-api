@@ -29,23 +29,6 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
 
-      - name: Set up SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          cat <<EOF > ~/.ssh/config
-          Host ec2-deploy
-            HostName ${{ secrets.EC2_HOST }}
-            User ${{ secrets.EC2_USERNAME }}
-            Port ${{ secrets.EC2_PORT }}
-            IdentityFile ~/.ssh/id_rsa
-            StrictHostKeyChecking no
-          EOF
-
       - name: Deploy and Run on EC2
         uses: appleboy/ssh-action@master
         env:
@@ -56,12 +39,15 @@ jobs:
           RABBITMQ_MANAGEMENT_PORT: ${{ secrets.RABBITMQ_MANAGEMENT_PORT }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          REGION: ${{ secrets.REGION }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
-          envs: PORT,RABBITMQ_USER,RABBITMQ_PASS,RABBITMQ_PORT,RABBITMQ_MANAGEMENT_PORT,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
+          envs: PORT,RABBITMQ_USER,RABBITMQ_PASS,RABBITMQ_PORT,RABBITMQ_MANAGEMENT_PORT,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,ACCESS_KEY,SECRET_KEY,REGION
           script: |
             set -e
               
@@ -116,8 +102,8 @@ jobs:
                 driver: bridge
             EOF
 
+            # PERUBAHAN: Menambahkan nama image ke dalam file .env
             echo "--> Creating .env file"
-            # Sekarang shell di EC2 bisa membaca variabel dari 'env' di atas
             cat << EOL > .env
             PORT=$PORT
             RABBITMQ_USER=$RABBITMQ_USER
@@ -126,6 +112,9 @@ jobs:
             RABBITMQ_MANAGEMENT_PORT=$RABBITMQ_MANAGEMENT_PORT
             DOCKER_IMAGE_NAME=$DOCKERHUB_USERNAME/rust-api
             IMAGE_TAG=latest
+            ACCESS_KEY=$ACCESS_KEY
+            SECRET_KEY=$SECRET_KEY
+            REGION=$REGION
             EOL
 
             echo "--> Logging in to Docker Hub on the EC2 server"
