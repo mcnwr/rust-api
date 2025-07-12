@@ -62,75 +62,32 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           envs: PORT,RABBITMQ_USER,RABBITMQ_PASS,RABBITMQ_PORT,RABBITMQ_MANAGEMENT_PORT,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,ACCESS_KEY,SECRET_KEY,REGION
           script: |
-            set -e
-              
+            set -e # Hentikan skrip jika ada error
+
             TARGET_DIR="/srv/rust-api"
             REPO_URL="https://github.com/${{ github.repository }}.git"
-            COMPOSE_FILE_PATH="$TARGET_DIR/docker-compose.prod.yml"
 
-            if [ ! -d "$TARGET_DIR/.git" ]; then
+            # 1. Pastikan direktori target ada dan masuk ke dalamnya
+            sudo mkdir -p "$TARGET_DIR"
+            # Pastikan user Anda memiliki izin ke direktori
+            sudo chown $USER:$USER "$TARGET_DIR"
+            cd "$TARGET_DIR"
+
+            # 2. Inisialisasi Git untuk sparse checkout HANYA jika belum ada
+            if [ ! -d ".git" ]; then
               echo "--> Initializing Git repo for sparse checkout..."
-              mkdir -p $TARGET_DIR
-              cd $TARGET_DIR
               git init
-              git remote add -f origin $REPO_URL
+              git remote add origin "$REPO_URL"
               git config core.sparseCheckout true
-              # Tentukan file mana saja yang ingin diambil
-              echo "docker-compose.prod.yml" > .git/info/sparse-checkout
-            fi 
+              # Tentukan file yang ingin diambil
+              echo "docker-compose.prod.yml" >> .git/info/sparse-checkout
+            fi
 
-            echo "--> Preparing directory $TARGET_DIR"
-            sudo mkdir -p $TARGET_DIR
-            sudo chown $USER:$USER $TARGET_DIR
-            cd $TARGET_DIR
+            # 3. Tarik versi terbaru DARI FILE YANG DITENTUKAN di sparse-checkout
+            echo "--> Pulling the latest docker-compose.prod.yml from Git..."
+            git pull origin main
 
-            echo "--> Creating docker-compose.prod.yml"
-            # Kita akan membuat file langsung di sini, lebih sederhana dan andal
-            cat << EOF > "$COMPOSE_FILE_PATH"
-            services:
-              rust-api:
-                image: \${DOCKER_IMAGE_NAME}:\${IMAGE_TAG:-latest}
-                ports:
-                  - "\${PORT}:\${PORT}"
-                environment:
-                  - PORT=\${PORT}
-                  - RABBITMQ_URL=amqp://\${RABBITMQ_USER}:\${RABBITMQ_PASS}@rabbitmq:5672
-                  - ACCESS_KEY=\${ACCESS_KEY}
-                  - SECRET_KEY=\${SECRET_KEY}
-                  - REGION=\${REGION}
-                depends_on:
-                  rabbitmq:
-                    condition: service_healthy
-                restart: unless-stopped
-
-              rabbitmq:
-                image: rabbitmq:3.12-management-alpine
-                ports:
-                  - "\${RABBITMQ_PORT}:\${RABBITMQ_PORT}"
-                  - "\${RABBITMQ_MANAGEMENT_PORT}:\${RABBITMQ_MANAGEMENT_PORT}"
-                environment:
-                  - RABBITMQ_DEFAULT_USER=\${RABBITMQ_USER}
-                  - RABBITMQ_DEFAULT_PASS=\${RABBITMQ_PASS}
-                volumes:
-                  - rabbitmq_data:/var/lib/rabbitmq
-                restart: unless-stopped
-                healthcheck:
-                  test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
-                  interval: 10s
-                  timeout: 5s
-                  retries: 5
-                  start_period: 30s
-
-            volumes:
-              rabbitmq_data:
-                driver: local
-
-            networks:
-              default:
-                driver: bridge
-            EOF
-
-            # PERUBAHAN: Menambahkan nama image ke dalam file .env
+            # 4. Buat file .env dari secrets (Langkah ini tetap diperlukan)
             echo "--> Creating .env file"
             cat << EOL > .env
             PORT=$PORT
@@ -145,17 +102,14 @@ jobs:
             REGION=$REGION
             EOL
 
+            # 5. Login ke Docker Hub
             echo "--> Logging in to Docker Hub on the EC2 server"
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
-            echo "--> Stopping existing containers..."
-            docker compose -f "$COMPOSE_FILE_PATH" down
-
-            echo "--> Pulling latest images..."
-            docker compose -f "$COMPOSE_FILE_PATH" pull
-
+            # 6. Jalankan Docker Compose
+            # Gunakan --pull always untuk memastikan image terbaru ditarik
             echo "--> Starting new containers..."
-            docker compose -f "$COMPOSE_FILE_PATH" up -d            
+            docker compose -f docker-compose.prod.yml up -d --pull always
 
             echo "--> Final container status:"
-            docker compose -f "$COMPOSE_FILE_PATH" ps
+            docker compose -f docker-compose.prod.yml ps
