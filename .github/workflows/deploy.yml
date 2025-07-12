@@ -1,13 +1,13 @@
 # Nama workflow
 name: Deploy Docker App to AWS EC2
 
-# Pemicu workflow: dijalankan setiap kali ada push ke branch 'main'
+# Pemicu workflow
 on:
   push:
     branches:
       - main
 
-# Daftar pekerjaan yang akan dijalankan
+# Daftar pekerjaan
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -77,11 +77,13 @@ jobs:
             chmod 600 ~/.ssh/id_deploy_key
             export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
 
-            # --- Siapkan direktori dan sparse checkout ---
+            # --- Siapkan direktori dan pindah ke dalamnya ---
             sudo mkdir -p "$TARGET_DIR"
             sudo chown $USER:$USER "$TARGET_DIR"
+            # Perintah krusial yang hilang: Pindah direktori kerja
             cd "$TARGET_DIR"
 
+            # Inisialisasi Git untuk sparse checkout HANYA jika belum ada
             if [ ! -d ".git" ]; then
               echo "--> Initializing Git repo for sparse checkout..."
               git init
@@ -90,15 +92,15 @@ jobs:
               echo "docker-compose.prod.yml" >> .git/info/sparse-checkout
             fi
 
-            # --- Tarik file dari Git ---
-            echo "--> Pulling the latest docker-compose.prod.yml from Git..."
+            # --- Tarik file ke direktori yang benar (/srv/rust-api) ---
+            echo "--> Pulling the latest docker-compose.prod.yml into $(pwd)"
             git pull origin main
 
             # Hapus file kunci setelah digunakan
             rm -f ~/.ssh/id_deploy_key
 
-            # --- Buat file .env dari secrets ---
-            echo "--> Creating .env file..."
+            # --- Buat file .env di direktori yang benar ---
+            echo "--> Creating .env file in $(pwd)"
             cat << EOL > .env
             PORT=$PORT
             RABBITMQ_USER=$RABBITMQ_USER
@@ -112,7 +114,7 @@ jobs:
             REGION=$REGION
             EOL
 
-            # --- Login ke Docker Hub & Jalankan Docker Compose ---
+            # --- Login & Jalankan Docker Compose dari direktori yang benar ---
             echo "--> Logging in to Docker Hub..."
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
