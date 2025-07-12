@@ -36,7 +36,7 @@ COPY src ./src
 COPY templates ./templates
 
 # Build with optimization flags and clean up unnecessary files
-RUN RUSTFLAGS="-C target-cpu=native -C opt-level=3" cargo build --release && \
+RUN RUSTFLAGS="-C opt-level=3" cargo build --release && \
     strip target/release/rust-api && \
     # Clean up everything except the final binary
     find target/release -type f ! -name 'rust-api' -delete && \
