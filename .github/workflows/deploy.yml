@@ -116,6 +116,14 @@ jobs:
             REGION=$REGION
             EOL
 
+            # --- VERIFIKASI FILE DAN DIREKTORI ---
+            echo "--- Verifying files and location ---"
+            echo "Current directory is:"
+            pwd
+            echo "Listing contents of /srv recursively:"
+            ls -laR /srv
+            echo "--- End of verification ---"
+
             # --- Login ke Docker Hub & Jalankan Docker Compose ---
             echo "--> Logging in to Docker Hub on the EC2 server..."
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
