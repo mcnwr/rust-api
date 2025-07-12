@@ -67,30 +67,40 @@ jobs:
             set -e # Hentikan skrip jika ada error
 
             TARGET_DIR="/srv/rust-api"
-            REPO_URL="https://github.com/${{ github.repository }}.git"
+            # Gunakan format URL SSH untuk otentikasi dengan deploy key
+            REPO_URL="git@github.com:$GITHUB_REPO.git"
 
-            # 1. Pastikan direktori target ada dan masuk ke dalamnya
+            # --- Konfigurasi SSH Key untuk Git ---
+            echo "--> Configuring SSH key for Git..."
+            mkdir -p ~/.ssh
+            echo "$DEPLOY_KEY" > ~/.ssh/id_deploy_key
+            chmod 600 ~/.ssh/id_deploy_key
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+
+            # --- Siapkan direktori dan sparse checkout ---
             sudo mkdir -p "$TARGET_DIR"
-            # Pastikan user Anda memiliki izin ke direktori
             sudo chown $USER:$USER "$TARGET_DIR"
             cd "$TARGET_DIR"
 
-            # 2. Inisialisasi Git untuk sparse checkout HANYA jika belum ada
+            # Inisialisasi Git untuk sparse checkout HANYA jika belum ada
             if [ ! -d ".git" ]; then
               echo "--> Initializing Git repo for sparse checkout..."
               git init
               git remote add origin "$REPO_URL"
               git config core.sparseCheckout true
-              # Tentukan file yang ingin diambil
+              # Tentukan hanya file docker-compose.prod.yml yang ingin diambil
               echo "docker-compose.prod.yml" >> .git/info/sparse-checkout
             fi
 
-            # 3. Tarik versi terbaru DARI FILE YANG DITENTUKAN di sparse-checkout
+            # Tarik versi terbaru dari docker-compose.prod.yml
             echo "--> Pulling the latest docker-compose.prod.yml from Git..."
             git pull origin main
 
-            # 4. Buat file .env dari secrets (Langkah ini tetap diperlukan)
-            echo "--> Creating .env file"
+            # Hapus file kunci setelah digunakan untuk keamanan
+            rm -f ~/.ssh/id_deploy_key
+
+            # --- Buat file .env dari secrets ---
+            echo "--> Creating .env file..."
             cat << EOL > .env
             PORT=$PORT
             RABBITMQ_USER=$RABBITMQ_USER
@@ -104,14 +114,13 @@ jobs:
             REGION=$REGION
             EOL
 
-            # 5. Login ke Docker Hub
-            echo "--> Logging in to Docker Hub on the EC2 server"
+            # --- Login ke Docker Hub & Jalankan Docker Compose ---
+            echo "--> Logging in to Docker Hub on the EC2 server..."
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
-            # 6. Jalankan Docker Compose
-            # Gunakan --pull always untuk memastikan image terbaru ditarik
             echo "--> Starting new containers..."
+            # --pull always akan menarik image baru jika ada sebelum menjalankan 'up'
             docker compose -f docker-compose.prod.yml up -d --pull always
 
-            echo "--> Final container status:"
+            echo "--> Deployment finished. Final container status:"
             docker compose -f docker-compose.prod.yml ps
