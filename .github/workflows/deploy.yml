@@ -65,7 +65,19 @@ jobs:
             set -e
               
             TARGET_DIR="/srv/rust-api"
+            REPO_URL="https://github.com/${{ github.repository }}.git"
             COMPOSE_FILE_PATH="$TARGET_DIR/docker-compose.prod.yml"
+
+            if [ ! -d "$TARGET_DIR/.git" ]; then
+              echo "--> Initializing Git repo for sparse checkout..."
+              mkdir -p $TARGET_DIR
+              cd $TARGET_DIR
+              git init
+              git remote add -f origin $REPO_URL
+              git config core.sparseCheckout true
+              # Tentukan file mana saja yang ingin diambil
+              echo "docker-compose.prod.yml" > .git/info/sparse-checkout
+            fi 
 
             echo "--> Preparing directory $TARGET_DIR"
             sudo mkdir -p $TARGET_DIR
