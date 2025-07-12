@@ -1,14 +1,16 @@
+# Nama workflow
 name: Deploy Docker App to AWS EC2
 
+# Pemicu workflow: dijalankan setiap kali ada push ke branch 'main'
 on:
   push:
     branches:
       - main
 
+# Daftar pekerjaan yang akan dijalankan
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,7 +32,6 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build and push Docker image
@@ -45,6 +46,8 @@ jobs:
       - name: Deploy and Run on EC2
         uses: appleboy/ssh-action@master
         env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          GITHUB_REPO: ${{ github.repository }}
           PORT: ${{ secrets.PORT }}
           RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
           RABBITMQ_PASS: ${{ secrets.RABBITMQ_PASS }}
@@ -55,8 +58,6 @@ jobs:
           ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           REGION: ${{ secrets.REGION }}
-          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-          GITHUB_REPO: ${{ github.repository }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
@@ -64,12 +65,9 @@ jobs:
           port: ${{ secrets.EC2_PORT }}
           envs: DEPLOY_KEY,GITHUB_REPO,PORT,RABBITMQ_USER,RABBITMQ_PASS,RABBITMQ_PORT,RABBITMQ_MANAGEMENT_PORT,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,ACCESS_KEY,SECRET_KEY,REGION
           script: |
-            # 'set -x' akan mencetak setiap perintah sebelum dieksekusi
-            # 'set -e' akan menghentikan skrip jika ada error
-            set -ex
+            set -e
 
             TARGET_DIR="/srv/rust-api"
-            # Gunakan format URL SSH untuk otentikasi dengan deploy key
             REPO_URL="git@github.com:$GITHUB_REPO.git"
 
             # --- Konfigurasi SSH Key untuk Git ---
@@ -84,21 +82,19 @@ jobs:
             sudo chown $USER:$USER "$TARGET_DIR"
             cd "$TARGET_DIR"
 
-            # Inisialisasi Git untuk sparse checkout HANYA jika belum ada
             if [ ! -d ".git" ]; then
               echo "--> Initializing Git repo for sparse checkout..."
               git init
               git remote add origin "$REPO_URL"
               git config core.sparseCheckout true
-              # Tentukan hanya file docker-compose.prod.yml yang ingin diambil
               echo "docker-compose.prod.yml" >> .git/info/sparse-checkout
             fi
 
-            # Tarik versi terbaru dari docker-compose.prod.yml
+            # --- Tarik file dari Git ---
             echo "--> Pulling the latest docker-compose.prod.yml from Git..."
             git pull origin main
 
-            # Hapus file kunci setelah digunakan untuk keamanan
+            # Hapus file kunci setelah digunakan
             rm -f ~/.ssh/id_deploy_key
 
             # --- Buat file .env dari secrets ---
@@ -116,21 +112,12 @@ jobs:
             REGION=$REGION
             EOL
 
-            # --- VERIFIKASI FILE DAN DIREKTORI ---
-            echo "--- Verifying files and location ---"
-            echo "Current directory is:"
-            pwd
-            echo "Listing contents of /srv recursively:"
-            ls -laR /srv
-            echo "--- End of verification ---"
-
             # --- Login ke Docker Hub & Jalankan Docker Compose ---
-            echo "--> Logging in to Docker Hub on the EC2 server..."
+            echo "--> Logging in to Docker Hub..."
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             echo "--> Starting new containers..."
-            # --pull always akan menarik image baru jika ada sebelum menjalankan 'up'
-            docker compose -f docker-compose.prod.yml up -d --pull always
+            docker compose -f docker-compose.prod.yml up -d --pull always --remove-orphans
 
             echo "--> Deployment finished. Final container status:"
             docker compose -f docker-compose.prod.yml ps
