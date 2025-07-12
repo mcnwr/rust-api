@@ -28,6 +28,8 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/rust-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy and Run on EC2
         uses: appleboy/ssh-action@master
@@ -130,8 +132,7 @@ jobs:
             docker compose -f "$COMPOSE_FILE_PATH" pull
 
             echo "--> Starting new containers..."
-            docker compose -f "$COMPOSE_FILE_PATH" up #-d
-            docker compose -f "$COMPOSE_FILE_PATH" up --abort-on-container-exit
+            docker compose -f "$COMPOSE_FILE_PATH" up -d            
 
             echo "--> Final container status:"
             docker compose -f "$COMPOSE_FILE_PATH" ps
