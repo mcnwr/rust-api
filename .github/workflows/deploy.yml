@@ -78,8 +78,7 @@ jobs:
             export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
 
             # --- Siapkan direktori dan pindah ke dalamnya ---
-            sudo mkdir -p "$TARGET_DIR"
-            sudo chmod +x /srv
+            sudo mkdir -p "$TARGET_DIR"            
             sudo chown $USER:$USER "$TARGET_DIR"
             # Perintah krusial yang hilang: Pindah direktori kerja
             cd "$TARGET_DIR"
